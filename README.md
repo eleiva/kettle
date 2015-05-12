@@ -28,11 +28,14 @@ foreach ($tweets as $tweet) {
 1. Configuration
 -------------------
 
-use .env to configure this
+use .env to configure this vars
 
+
+```
 AWS_REGION
 AWS_ACCESS_KEY_ID
 AWS_REGION
+```
 
 
 ```
