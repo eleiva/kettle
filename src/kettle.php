@@ -982,8 +982,10 @@ class ORM
     //-----------------------------------------------
     // PRIVATE METHODS
     //-----------------------------------------------
-    protected function __construct()
+    public function __construct()
     {
+    		self::_setupClient();
+        return new $class_name();
 
     }
 
