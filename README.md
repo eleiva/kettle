@@ -1,4 +1,4 @@
-Kettle
+Kettle by eleiva
 ======
 
 Kettle is a lightweight object-dynamodb mapper for PHP5.
