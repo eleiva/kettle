@@ -38,8 +38,6 @@ AWS_REGION
 ```
 
 
-```
-
 2. Create Model Class
 -------------------
 
