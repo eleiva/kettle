@@ -1304,9 +1304,9 @@ class ORM
     {
         if (!self::$_client) {
             $params = array(
-                'key'    => self::$_config['key'],
-                'secret' => self::$_config['secret'],
-                'region' => self::$_config['region'],
+                'key'    => getenv('AWS_ACCESS_KEY_ID'),
+                'secret' => getenv('AWS_SECRET_ACCESS_KEY'),
+                'region' => getenv('AWS_REGION')
             );
 
             if (self::$_config['base_url']) {

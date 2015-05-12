@@ -28,16 +28,12 @@ foreach ($tweets as $tweet) {
 1. Configuration
 -------------------
 
-```php
-<?php
-use Kettle\ORM;
+use .env to configure this
 
-ORM::configure("key",    'AWS_KEY');
-ORM::configure("secret", 'AWS_SECRET');
-ORM::configure("region", 'AWS_REGION');
+AWS_REGION
+AWS_ACCESS_KEY_ID
+AWS_REGION
 
-// In order to use DynamoDB Local, you need to set "base_url".
-// ORM::configure("base_url", 'http://localhost:8000/');
 
 ```
 
