@@ -36,8 +36,8 @@ class ORM
         'key'              => null,
         'secret'           => null,
         'region'           => null,
-        'logging'          => true,
-        'logging_response' => true,
+        'logging'          => false,
+        'logging_response' => false,
         'base_url'         => null,
     );
 
@@ -84,7 +84,6 @@ class ORM
 
     // LIMIT (QueryParameter)
     protected $_limit = null;
-    protected $_count = false;
 
     // ExclusiveStartKey (QueryParameter)
     protected $_exclusive_start_key = null;
@@ -250,9 +249,8 @@ class ORM
     {
         $conditions = $this->_buildConditions($this->_where_conditions);
         if ($this->_filter_conditions) {
-					$filter_conditions      = $this->_buildConditions($this->_filter_conditions);
-					//FIX - Norton
-            $options['KeyConditions'] = $filter_conditions;
+            $filter_conditions      = $this->_buildConditions($this->_filter_conditions);
+            $options['QueryFilter'] = $filter_conditions;
         }
         $result = $this->query($conditions, $options);
 
@@ -265,25 +263,6 @@ class ORM
             $array[] = $instance;
         }
         return $array;
-    }
-
-    public function count(array $options = array())
-		{
-				$options['ScanFilter'] = null;
-        $conditions = $this->_buildConditions($this->_where_conditions);
-        if ($this->_filter_conditions) {
-            $filter_conditions      = $this->_buildConditions($this->_filter_conditions);
-            $options['ScanFilter'] = $filter_conditions;
-				}
-
-			$filter = array(
-          "TableName" 		=> "krakatoa_events",
-          'Select'       	=> 'COUNT',
-          'ScanFilter'   	=> $options['ScanFilter']
-          );
-			$result = self::$_client->scan($filter);
-
-      return $result;
     }
 
     /**
@@ -468,6 +447,7 @@ class ORM
             $value    = $args[2];
             $operator = $this->_convertOperator($args[1]);
         }
+
         $this->_filter_conditions[] = array($key, $operator, $value);
         return $this;
     }
@@ -619,10 +599,10 @@ class ORM
                 $args['ExclusiveStartKey'] = $exclusive_start_key;
             }
 
-						$args['Limit'] = intval($this->_limit);
-            //self::_logQuery("query", $args, null);
-						$result = self::$_client->query($args);
-           // self::_logQuery("query", $args, $result);
+            $args['Limit'] = intval($this->_limit);
+
+            $result = self::$_client->query($args);
+            self::_logQuery("query", $args, $result);
 
             // $result is "Guzzle\Service\Resource\Model"
             // and $result has next keys
@@ -647,9 +627,8 @@ class ORM
             $this->_result_count = $result_count;
 
         } else { // No limit (Use Iterator)
-            self::_logQuery('getIterator', $args, null );
             $iterator = self::$_client->getIterator('Query', $args);
-            //self::_logQuery('getIterator', $args, $iterator);
+            self::_logQuery('getIterator', $args, $iterator);
             // $iterator is "Aws\Common\Iterator\AwsResourceIterator"
             $items = array();
             foreach ($iterator as $item) {
@@ -676,11 +655,7 @@ class ORM
         if ($this->_filter_conditions) {
             $filter_conditions     = $this->_buildConditions($this->_filter_conditions);
             $options['ScanFilter'] = $filter_conditions;
-				}
-
-				if ( $this->_limit ) {
-					$options['Limit'] = intval($this->_limit);
-				} 
+        }
         $result     = $this->scan($options);
         $array      = array();
         $class_name = get_called_class();
@@ -702,14 +677,8 @@ class ORM
      */
     public function scan(array $options = array())
     {
-			 $options['TableName'] = $this->_table_name;
-				if ( $this->_limit ){
-					$limit = array('limit' => $this->_limit);
-        	$iterator             = self::$_client->getIterator('Scan', $options,$limit);
-				} else {
-        	$iterator             = self::$_client->getIterator('Scan', $options);
-				}
-        self::_logQuery("scan", $options, null);
+        $options['TableName'] = $this->_table_name;
+        $iterator             = self::$_client->getIterator('Scan', $options);
         $items                = array();
         foreach ($iterator as $item) {
             $items[] = $item;
@@ -717,18 +686,6 @@ class ORM
         return $this->_formatResults($items);
     }
 
-		public function getOptions() {
-			if ($this->_filter_conditions) {
-      	$filter_conditions     = $this->_buildConditions($this->_filter_conditions);
-      	$options['ScanFilter'] = $filter_conditions;
-      }
-
-			if ( $this->_limit ) {
-      	$options['Limit'] = intval($this->_limit);
-      }
-
-			return $options;
-		}
     /**
      * putItem
      *
@@ -1313,16 +1270,13 @@ class ORM
      */
     protected function _getDataType($key)
     {
-			$type = 'S';
+        $type = 'S';
         if (isset($this->_schema[$key])) {
             $type = $this->_schema[$key];
-				}
+        }
         return $type;
     }
 
-		public function setSchema($key,$dtype) {
-				$this->_schema[$key] = $dtype;
-		}
     /**
      * Removing all empty elements from a hash
      *
@@ -1369,25 +1323,15 @@ class ORM
             return false;
         }
         $log = array("query" => $query, "args" => $args);
+
         if (self::getConfig('logging_response')) {
             $log["response"] = $response;
         }
         self::$_query_log[] = $log;
-				self::log($log);
-		}
-
-		protected static function log($log){ 
-		 // open file
-		 $fd = fopen("/tmp/kettle.log", "a");
-		 // write string
-		 fwrite($fd, print_r($log,true) . "\n");
-		 // close file
-		 fclose($fd);
-   }
+    }
 }
 
 class KettleException extends \Exception
 {
 }
-
 
