@@ -1351,7 +1351,8 @@ class ORM
             $params = array(
                 'key'    => getenv('AWS_ACCESS_KEY_ID'),
                 'secret' => getenv('AWS_SECRET_ACCESS_KEY'),
-                'region' => getenv('AWS_REGION')
+                'region' => getenv('AWS_REGION'),
+							  'version'=> getenv('AWS_VERSION')
             );
 
             if (self::$_config['base_url']) {
